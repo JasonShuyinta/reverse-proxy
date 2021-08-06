@@ -9,10 +9,6 @@ const port = 9091
 app.use(express.json());
 app.use(cors());
 
-app.get('/getServer', (req, res) => {
-    res.status(200).json({ serverName: "One"})
-})
-
 app.post('/sumNumbers', (req,res) => {
     var numOne = parseInt(req.body.numOne)
     var numTwo = parseInt(req.body.numTwo)
@@ -20,6 +16,7 @@ app.post('/sumNumbers', (req,res) => {
 })
 
 app.post('/getData', (req, res) => {
+    //Mock API to get random data
     axios.get("https://jsonplaceholder.typicode.com/todos")
      .then(response => { 
         console.log("Server One Responded!");
@@ -27,4 +24,4 @@ app.post('/getData', (req, res) => {
      .catch(err => console.log(err));
  })
 
-app.listen(port, () => console.info(`App listening on port ${port}`))
+app.listen(port, () => console.info(`Server listening on port ${port}`))

@@ -19,6 +19,7 @@ export default function App() {
   const [data, setData] = useState([]);
   const [elapsedTime, setElapsedTime] = useState("");
 
+  //The reverse proxy is listening at localhost:5000 
   const sumNumbers = () => {
     if (numOne !== "" && numTwo !== "") {
       axios
@@ -28,6 +29,7 @@ export default function App() {
           loadBalancer,
         })
         .then((res) => {
+          //The query returns the result and the server that calculated the result
           setResult(res.data.result);
           setServerName(`http://localhost:${res.data.serverName}`);
         })
@@ -39,6 +41,8 @@ export default function App() {
     setLoadBalancer(e.target.value);
   };
 
+  //function to test the in-memory cache, if there is a cache hit
+  //the time elapsed to return a respond should be significantly less
   const getData = () => {
     let start_time = new Date().getTime();
     axios
@@ -52,7 +56,7 @@ export default function App() {
 
   return (
     <div style={{textAlign: "center"}}>
-      <h1>Home page </h1>
+      <h1>REVERSE PROXY </h1>
       <Grid container>
         <Grid item xs={6} style={{textAlign: "center"}}>
           <h3>Sum Numbers</h3>
