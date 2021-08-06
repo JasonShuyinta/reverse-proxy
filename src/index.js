@@ -51,7 +51,7 @@ export default function App() {
   };
 
   return (
-    <>
+    <div style={{textAlign: "center"}}>
       <h1>Home page </h1>
       <Grid container>
         <Grid item xs={6} style={{textAlign: "center"}}>
@@ -73,7 +73,7 @@ export default function App() {
           <p>Result: {result}</p>
           <p>Delivered by server : {serverName} </p>
         </Grid>
-        
+
         <Grid item xs={6} style={{textAlign: "center"}}>
           <h3>Get Random Data</h3>
           <p>Time elapsed: {elapsedTime} </p>
@@ -99,6 +99,6 @@ export default function App() {
           </Table>
         </Grid>
       </Grid>
-    </>
+    </div>
   );
 }
