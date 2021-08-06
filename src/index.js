@@ -42,7 +42,7 @@ export default function App() {
   };
 
   //function to test the in-memory cache, if there is a cache hit
-  //the time elapsed to return a respond should be significantly less
+  //the time elapsed to return a response should be significantly less
   const getData = () => {
     let start_time = new Date().getTime();
     axios

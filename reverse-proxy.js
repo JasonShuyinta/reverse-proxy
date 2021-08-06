@@ -4,8 +4,7 @@ const httpProxy = require("http-proxy");
 const NodeCache = require("node-cache");
 const cors = require("cors");
 
-//Store cache for 5 seconds, then delete it
-const myCache = new NodeCache({ stdTTL: 5 });
+
 //Addresses of the 2 servers that can handle client requests.
 //There can be more than 2 servers.
 const targets = ["http://localhost:9091", "http://localhost:9092"];
@@ -29,6 +28,9 @@ function roundRobinBalancer() {
 
 //Creating the proxy
 const proxy = httpProxy.createProxyServer({});
+
+//Store cache for 5 seconds, then delete it
+const myCache = new NodeCache({ stdTTL: 5 });
 
 var isRandom = false;
 
