@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import {Button,Grid,TextField,Radio,Table,TableBody,TableCell,TableHead,TableRow } from "@material-ui/core";
+import {Button,Grid,TextField,Radio,Table,TableBody,TableCell,TableHead,TableRow, Typography } from "@material-ui/core";
 import axios from "axios";
+
+const PROXY_ADDRESS = process.env.REACT_APP_PROXY_ADDRESS
+const PROXY_PORT = process.env.REACT_APP_PROXY_PORT
 
 ReactDOM.render(
   <React.StrictMode>
@@ -11,7 +14,8 @@ ReactDOM.render(
 );
 
 export default function App() {
-  const [serverName, setServerName] = useState("");
+  const [serverNameSum, setServerNameSum] = useState("");
+  const [serverNameData, setServerNameData] = useState("")
   const [numOne, setNumOne] = useState("");
   const [numTwo, setNumTwo] = useState("");
   const [result, setResult] = useState("");
@@ -19,11 +23,18 @@ export default function App() {
   const [data, setData] = useState([]);
   const [elapsedTime, setElapsedTime] = useState("");
 
-  //The reverse proxy is listening at localhost:5000 
+  useEffect(() => {
+    axios.get(`http://${PROXY_ADDRESS}:${PROXY_PORT}/parseYaml`)
+      .then(res => console.log(res.data.data))
+      .catch(err => console.log(err))
+  }, [])
+
+
+  //The reverse proxy is listening at localhost:8080
   const sumNumbers = () => {
     if (numOne !== "" && numTwo !== "") {
       axios
-        .post("http://localhost:5000/sumNumbers", {
+        .post(`http://${PROXY_ADDRESS}:${PROXY_PORT}/sumNumbers`, {
           numOne,
           numTwo,
           loadBalancer,
@@ -31,10 +42,10 @@ export default function App() {
         .then((res) => {
           //The query returns the result and the server that calculated the result
           setResult(res.data.result);
-          setServerName(`http://localhost:${res.data.serverName}`);
+          setServerNameSum(res.data.serverName);
         })
         .catch((err) => console.log(err));
-    }
+    } else alert("Fill all the fields")
   };
 
   const handleLoadBalancer = (e) => {
@@ -46,9 +57,10 @@ export default function App() {
   const getData = () => {
     let start_time = new Date().getTime();
     axios
-      .post("http://localhost:5000/getData", {})
+      .post(`http://${PROXY_ADDRESS}:${PROXY_PORT}/getData`, { loadBalancer })
       .then((res) => {
         setData(res.data.data);
+        setServerNameData(res.data.serverName)
         setElapsedTime(`${new Date().getTime() - start_time} milliseconds`);
       })
       .catch((err) => console.log(err));
@@ -56,10 +68,10 @@ export default function App() {
 
   return (
     <div style={{textAlign: "center"}}>
-      <h1>REVERSE PROXY </h1>
+      <Typography variant="h3">REVERSE PROXY </Typography>
       <Grid container>
-        <Grid item xs={6} style={{textAlign: "center"}}>
-          <h3>Sum Numbers</h3>
+        <Grid item xs={12} style={{textAlign: "center"}}>
+          <Typography variant="h5">Choose load balancing strategy</Typography>
           <label>Random</label>
           <Radio
             checked={loadBalancer === "random"} onChange={handleLoadBalancer}
@@ -68,19 +80,22 @@ export default function App() {
           <Radio
             checked={loadBalancer === "roundrobin"} onChange={handleLoadBalancer}
             value="roundrobin" name="radio-load-balancer" />
-          <br />
+        </Grid>
+        <Grid item xs={6} style={{textAlign: "center", padding: "1rem"}}>
+          <Typography variant="h5">Sum Numbers</Typography>
           <TextField value={numOne} onChange={(e) => setNumOne(e.target.value)} type="number" label="First number" variant="outlined" />
           &nbsp;
           <TextField value={numTwo} onChange={(e) => setNumTwo(e.target.value)} type="number" label="Second number" variant="outlined" />
           <br /> <br />
           <Button variant="contained" onClick={sumNumbers}> Sum</Button>
-          <p>Result: {result}</p>
-          <p>Delivered by server : {serverName} </p>
+          <Typography variant="subtitle2">Result: {result}</Typography>
+          <Typography variant="subtitle2">Delivered by server : {serverNameSum} </Typography>
         </Grid>
 
         <Grid item xs={6} style={{textAlign: "center"}}>
-          <h3>Get Random Data</h3>
-          <p>Time elapsed: {elapsedTime} </p>
+          <Typography variant="h5">Get Random Data</Typography>
+          <Typography variant="subtitle1">Time elapsed: {elapsedTime} </Typography>
+          <Typography variant="subtitle1">Delivered by server: {serverNameData}</Typography>
           <Button variant="contained" onClick={getData}> Get Data</Button>
           <Table>
             <TableHead>

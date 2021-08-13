@@ -3,13 +3,18 @@ const express = require("express");
 const httpProxy = require("http-proxy");
 const NodeCache = require("node-cache");
 const cors = require("cors");
+require('dotenv').config()
+
+const fs = require('fs')
+const yaml = require('js-yaml')
 
 
 //Addresses of the 2 servers that can handle client requests.
 //There can be more than 2 servers.
-const targets = ["http://localhost:9091", "http://localhost:9092"];
-
+var targets = [];
 var counter = 0;
+var serverOneUsageCounter = 0;
+var serverTwoUsageCounter = 0;
 
 //This load balancer strategy chooses one of the servers randomly to serve the request
 function randomLoadBalancer() {
@@ -41,15 +46,18 @@ proxy.on("proxyReq", function (proxyReq, req, res, options) {
     if (req.body.loadBalancer) {
       //Set the load balancing strategy
       if (req.body.loadBalancer === "random") isRandom = true;
-      else isRandom = false;
-    } else {
+      else isRandom = false; 
 
-      //If there is request made to the "/getData" endpoint within 5 seconds to the 
-      //previous request, the response is stored in the cache of the proxy. 
-      //Use this result instead of querying the server, reducing bandwidth usage and latency.
-      if (myCache.has("todos")) {
-        console.log("Cache hit");
-        return res.status(200).send(myCache.get("todos"));
+      //If there is request made to the "/getData" endpoint the response is stored
+      //in the cache. If a request is made to the same endpoint within 5 seconds from the 
+      //previous request, the response is taken from the cache instead of querying the server, 
+      //reducing bandwidth usage and latency.
+      //After 5 seconds the caches are emptied.
+      if(req.path == "/getData") {
+        if (myCache.has("todos")) {
+          console.log("Cache hit");
+          return res.status(200).send(myCache.get("todos"));
+        }
       }
     }
     
@@ -67,6 +75,12 @@ proxy.on("proxyReq", function (proxyReq, req, res, options) {
 //let's store it in the cache
 proxy.on("proxyRes", function (proxyRes, req, res) {
   proxyRes.on("data", function (dataBuffer) {
+    var responseData = JSON.parse(dataBuffer.toString("utf8"))
+
+    console.log(
+      `Server: ${responseData.serverName} has counter ${responseData.counter}`
+      )
+
     if (proxyRes.client._httpMessage.path == "/getData") {
       var data = dataBuffer.toString("utf8");
       myCache.set("todos", data);
@@ -79,6 +93,19 @@ proxyApp.use(express.json());
 proxyApp.use(express.urlencoded({ extended: true }));
 proxyApp.use(cors());
 
+proxyApp.get('/parseYaml', (req,res) => {
+  try {
+      targets = []
+      let data = yaml.load(fs.readFileSync('./config.yaml', 'utf8'));
+      data.proxy.services[0].hosts.forEach(host => {
+        targets.push(`http://${host.address}:${host.port}`)
+      });
+      return res.status(200).json({data})
+  } catch (e) {
+      console.log(e);
+  }
+})
+
 proxyApp.use(function (req, res) {
   proxy.web(req, res, {
     //Based on the user's choice, it is possible to choose between 2 load balancing strategies
@@ -86,6 +113,7 @@ proxyApp.use(function (req, res) {
   });
 });
 
-http.createServer(proxyApp).listen(5000, "localhost", () => {
-  console.log("Proxy server listening on 5000");
+http.createServer(proxyApp)
+  .listen(process.env.REACT_APP_PROXY_PORT, process.env.REACT_APP_PROXY_ADDRESS, 
+  () => { console.log(`Proxy server listening at ${process.env.REACT_APP_PROXY_ADDRESS}:${process.env.REACT_APP_PROXY_PORT}`);
 });
