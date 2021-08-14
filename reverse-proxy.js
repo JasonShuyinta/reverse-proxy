@@ -8,8 +8,6 @@ require("dotenv").config();
 const fs = require("fs");
 const yaml = require("js-yaml");
 
-//Addresses of the 2 servers that can handle client requests.
-//There can be more than 2 servers.
 var targets = [];
 var counter = 0;
 var serverOneUsageCounter = 0;
@@ -24,6 +22,8 @@ function randomLoadBalancer() {
 //The Round Robin strategy selectes sequentially the servers, so that each subsequent request is
 //served by the next server
 function roundRobinBalancer() {
+  //the while loop assures that the servers work equally, distributing the incoming requests
+  //to the server that has worked less. It is based on the idea of the Least Connection algorithm. 
   while(Math.abs(serverOneUsageCounter - serverTwoUsageCounter) > 1) {
     if(serverOneUsageCounter > serverTwoUsageCounter) chosenTarget = targets[1];
     else chosenTarget = targets[0]
@@ -47,7 +47,6 @@ proxy.on("proxyReq", function (proxyReq, req, res, options) {
   //in the cache. If a request is made to the same endpoint within 5 seconds from the
   //previous request, the response is taken from the cache instead of querying the server,
   //reducing bandwidth usage and latency.
-  //After 5 seconds the caches are emptied.
   if (req.path == "/getData") {
     if (myCache.has("todos")) {
       console.log("Cache hit");
@@ -55,7 +54,6 @@ proxy.on("proxyReq", function (proxyReq, req, res, options) {
     }
   }
 
-  //If it's a post request
   if (req.body) {
     //In order for the request to pass through the proxy to the server, set the headers of the request
     // so that it can read JSON data
@@ -66,16 +64,19 @@ proxy.on("proxyReq", function (proxyReq, req, res, options) {
   }
 });
 
-//Before passing the response from the server back to the client
-//let's store it in the cache
+
+//Work on the response obtained from the server before passing it back to the client
 proxy.on("proxyRes", function (proxyRes, req, res) {
   proxyRes.on("data", function (dataBuffer) {
     var data = dataBuffer.toString("utf8");
+
+    //Counters to keep track of the work load on each server
     if (`http://${JSON.parse(data).serverName}` == targets[0])
       serverOneUsageCounter = JSON.parse(data).counter; 
     if (`http://${JSON.parse(data).serverName}` == targets[1])
       serverTwoUsageCounter = JSON.parse(data).counter;
 
+    //If the request is made to "/getData", store the response in the cache
     if (proxyRes.client._httpMessage.path == "/getData")
       myCache.set("todos", data);
   });
@@ -86,6 +87,8 @@ proxyApp.use(express.json());
 proxyApp.use(express.urlencoded({ extended: true }));
 proxyApp.use(cors());
 
+//The "/parseYaml" endpoint is called only once, on the applications first render.
+//It parses the "config.yaml" to obtain addresses and ports of the servers.
 proxyApp.get("/parseYaml", (req, res) => {
   try {
     targets = [];
@@ -99,6 +102,8 @@ proxyApp.get("/parseYaml", (req, res) => {
   }
 });
 
+//Based on the clients decision, select the load balancing strategy, 
+//or directly set the server to respond to the request
 proxyApp.use(function (req, res) {
   var chosenStrategy = "";
   switch (req.body.loadBalancer) {

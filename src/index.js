@@ -23,6 +23,7 @@ export default function App() {
   const [data, setData] = useState([]);
   const [elapsedTime, setElapsedTime] = useState("");
 
+  //Call the "/parseYaml" endpoint only on the first render
   useEffect(() => {
     axios.get(`http://${PROXY_ADDRESS}:${PROXY_PORT}/parseYaml`)
       .then(res => console.log(res.data.data))
@@ -30,7 +31,6 @@ export default function App() {
   }, [])
 
 
-  //The reverse proxy is listening at localhost:8080
   const sumNumbers = () => {
     if (numOne !== "" && numTwo !== "") {
       axios
@@ -71,7 +71,7 @@ export default function App() {
       <Typography variant="h4">REVERSE PROXY </Typography>
       <Grid container>
         <Grid item xs={12} style={{textAlign: "center"}}>
-          <Typography variant="h6">Choose load balancing strategy</Typography>
+          <Typography variant="h6">Choose a load balancing strategy</Typography>
           <label>Random</label>
           <Radio
             checked={loadBalancer === "random"} onChange={handleLoadBalancer}

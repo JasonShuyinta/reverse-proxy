@@ -1,3 +1,7 @@
+//Each endpoint has a counter to keep track of the server
+//usage, so that the Round Robin Load Balancing strategy can 
+//distribute equally the requests between the servers.
+
 const express = require("express");
 const cors = require("cors");
 const { default: axios } = require("axios");
@@ -15,7 +19,7 @@ app.post("/sumNumbers", (req, res) => {
   var numOne = parseInt(req.body.numOne);
   var numTwo = parseInt(req.body.numTwo);
   counter++;
-  console.log(`counter: ${counter}`);
+  console.log(`Server Two counter: ${counter}`);
   return res.status(200).json({
     result: numOne + numTwo,
     serverName: `${req.hostname}:${PORT}`,
@@ -29,7 +33,7 @@ app.post("/getData", (req, res) => {
     .get("https://jsonplaceholder.typicode.com/todos")
     .then((response) => {
       counter++;
-      console.log(`counter: ${counter}`);
+      console.log(`Server Two counter: ${counter}`);
       return res.status(200).json({
         data: response.data,
         serverName: `${req.hostname}:${PORT}`,
