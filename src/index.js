@@ -3,8 +3,8 @@ import ReactDOM from "react-dom";
 import {Button,Grid,TextField,Radio,Table,TableBody,TableCell,TableHead,TableRow, Typography } from "@material-ui/core";
 import axios from "axios";
 
-const PROXY_ADDRESS = process.env.REACT_APP_PROXY_ADDRESS
-const PROXY_PORT = process.env.REACT_APP_PROXY_PORT
+const PROXY_ADDRESS = "127.0.0.1"
+const PROXY_PORT = 8080
 
 ReactDOM.render(
   <React.StrictMode>
@@ -68,10 +68,10 @@ export default function App() {
 
   return (
     <div style={{textAlign: "center"}}>
-      <Typography variant="h3">REVERSE PROXY </Typography>
+      <Typography variant="h4">REVERSE PROXY </Typography>
       <Grid container>
         <Grid item xs={12} style={{textAlign: "center"}}>
-          <Typography variant="h5">Choose load balancing strategy</Typography>
+          <Typography variant="h6">Choose load balancing strategy</Typography>
           <label>Random</label>
           <Radio
             checked={loadBalancer === "random"} onChange={handleLoadBalancer}
@@ -80,6 +80,17 @@ export default function App() {
           <Radio
             checked={loadBalancer === "roundrobin"} onChange={handleLoadBalancer}
             value="roundrobin" name="radio-load-balancer" />
+        </Grid>
+        <Grid item xs={12}  style={{textAlign: "center"}}>
+          <Typography variant="h6">Or manually choose a server</Typography>
+          <label>Server One</label>
+          <Radio
+            checked={loadBalancer === "one"} onChange={handleLoadBalancer}
+            value="one" name="radio-load-balancer" />
+          <label>Server Two</label>
+          <Radio
+            checked={loadBalancer === "two"} onChange={handleLoadBalancer}
+            value="two" name="radio-load-balancer" />
         </Grid>
         <Grid item xs={6} style={{textAlign: "center", padding: "1rem"}}>
           <Typography variant="h5">Sum Numbers</Typography>
