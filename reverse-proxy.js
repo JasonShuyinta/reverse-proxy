@@ -3,7 +3,7 @@ const express = require("express");
 const httpProxy = require("http-proxy");
 const NodeCache = require("node-cache");
 const cors = require("cors");
-require("dotenv").config();
+var modifyResponse = require('node-http-proxy-json');
 
 const fs = require("fs");
 const yaml = require("js-yaml");
@@ -13,11 +13,21 @@ var counter = 0;
 var serverOneUsageCounter = 0;
 var serverTwoUsageCounter = 0;
 
+
+function sum(a, b) {
+  return'http://127.0.0.1:9091'
+}
+ 
+module.exports = sum;
+
+
 //This load balancer strategy chooses one of the servers randomly to serve the request
 function randomLoadBalancer() {
   var chosenTarget = targets[Math.floor(Math.random() * targets.length)];
   return chosenTarget;
 }
+
+//module.exports = randomLoadBalancer
 
 //The Round Robin strategy selectes sequentially the servers, so that each subsequent request is
 //served by the next server
@@ -38,20 +48,19 @@ function roundRobinBalancer() {
 //Creating the proxy
 const proxy = httpProxy.createProxyServer({});
 
-//Store cache for 5 seconds, then delete it
+//Set cache storing time to 5 seconds
 const myCache = new NodeCache({ stdTTL: 5 });
 
 //The request passes through the proxy before being passed on to one of the servers
 proxy.on("proxyReq", function (proxyReq, req, res, options) {
+
   //If there is request made to the "/getData" endpoint the response is stored
   //in the cache. If a request is made to the same endpoint within 5 seconds from the
   //previous request, the response is taken from the cache instead of querying the server,
   //reducing bandwidth usage and latency.
   if (req.path == "/getData") {
-    if (myCache.has("todos")) {
-      console.log("Cache hit");
+    if (myCache.has("todos")) 
       return res.status(200).send(myCache.get("todos"));
-    }
   }
 
   if (req.body) {
@@ -80,6 +89,22 @@ proxy.on("proxyRes", function (proxyRes, req, res) {
     if (proxyRes.client._httpMessage.path == "/getData")
       myCache.set("todos", data);
   });
+
+  //Modify the response received from the server, adding the server usage percentage to the 
+  //body of the response before passing it back to the client
+  //To do this, the 'node-http-proxy-json' library has been used.
+  //**Note from the library documentation**: 
+  //"Usually the server will compress the data. So before using this repository, 
+  //confirm your server compression format, currently only supports gzip、deflate and uncompressed."
+    modifyResponse(res, proxyRes, function (body) {
+      if (body) {
+          var totalUsage = serverOneUsageCounter + serverTwoUsageCounter;
+          body.serverOneUsage = Math.floor((serverOneUsageCounter / totalUsage) * 100)
+          body.serverTwoUsage = Math.floor((serverTwoUsageCounter / totalUsage) * 100)
+          delete body.version;
+      }
+      return body;
+  })
 });
 
 const proxyApp = express();
@@ -102,40 +127,27 @@ proxyApp.get("/parseYaml", (req, res) => {
   }
 });
 
-//Based on the clients decision, select the load balancing strategy, 
+//Based on the clients decision either select the load balancing strategy, 
 //or directly set the server to respond to the request
 proxyApp.use(function (req, res) {
   var chosenStrategy = "";
   switch (req.body.loadBalancer) {
     case "random":
-      chosenStrategy = randomLoadBalancer();
-      break;
+      chosenStrategy = randomLoadBalancer(); break;
     case "roundrobin":
-      chosenStrategy = roundRobinBalancer();
-      break;
+      chosenStrategy = roundRobinBalancer(); break;
     case "one":
-      chosenStrategy = targets[0];
-      break;
+      chosenStrategy = targets[0]; break;
     case "two":
-      chosenStrategy = targets[1];
-      break;
+      chosenStrategy = targets[1]; break;
   }
-  proxy.web(req, res, {
-    target: chosenStrategy,
-  });
+
+  proxy.web(req, res, { target: chosenStrategy });
 });
 
 const PORT = 8080;
 const ADDRESS = "127.0.0.1"
 
-http
-  .createServer(proxyApp)
-  .listen(
-    PORT,
-    ADDRESS,
-    () => {
-      console.log(
-        `Proxy server listening at ${ADDRESS}:${PORT}`
-      );
-    }
-  );
+
+http.createServer(proxyApp)
+  .listen(PORT, ADDRESS, () => { console.log(`Proxy server listening at ${ADDRESS}:${PORT}`)});

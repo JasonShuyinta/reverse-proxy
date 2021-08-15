@@ -19,7 +19,6 @@ app.post("/sumNumbers", (req, res) => {
   var numOne = parseInt(req.body.numOne);
   var numTwo = parseInt(req.body.numTwo);
   counter++;
-  console.log(`Server One counter: ${counter}`);
   return res.status(200).json({
     result: numOne + numTwo,
     serverName: `${req.hostname}:${PORT}`,
@@ -33,7 +32,6 @@ app.post("/getData", (req, res) => {
     .get("https://jsonplaceholder.typicode.com/todos")
     .then((response) => {
       counter++;
-      console.log(`Server One counter: ${counter}`);
       return res.status(200).json({
         data: response.data,
         serverName: `${req.hostname}:${PORT}`,

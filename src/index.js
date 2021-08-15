@@ -22,6 +22,9 @@ export default function App() {
   const [loadBalancer, setLoadBalancer] = useState("random");
   const [data, setData] = useState([]);
   const [elapsedTime, setElapsedTime] = useState("");
+  const [serverOneUsage, setServerOneUsage] = useState(0)
+  const [serverTwoUsage, setServerTwoUsage] = useState(0)
+  const [cacheHit, setCacheHit] = useState(false)
 
   //Call the "/parseYaml" endpoint only on the first render
   useEffect(() => {
@@ -43,6 +46,8 @@ export default function App() {
           //The query returns the result and the server that calculated the result
           setResult(res.data.result);
           setServerNameSum(res.data.serverName);
+          setServerOneUsage(res.data.serverOneUsage)
+          setServerTwoUsage(res.data.serverTwoUsage)
         })
         .catch((err) => console.log(err));
     } else alert("Fill all the fields")
@@ -62,13 +67,17 @@ export default function App() {
         setData(res.data.data);
         setServerNameData(res.data.serverName)
         setElapsedTime(`${new Date().getTime() - start_time} milliseconds`);
+        if(res.data.serverOneUsage) {
+          setServerOneUsage(res.data.serverOneUsage)
+          setServerTwoUsage(res.data.serverTwoUsage)
+          setCacheHit(false)
+        } else setCacheHit(true)
       })
       .catch((err) => console.log(err));
   };
 
   return (
     <div style={{textAlign: "center"}}>
-      <Typography variant="h4">REVERSE PROXY </Typography>
       <Grid container>
         <Grid item xs={12} style={{textAlign: "center"}}>
           <Typography variant="h6">Choose a load balancing strategy</Typography>
@@ -92,21 +101,25 @@ export default function App() {
             checked={loadBalancer === "two"} onChange={handleLoadBalancer}
             value="two" name="radio-load-balancer" />
         </Grid>
+        <Grid item xs={12}>
+          <Typography variant="subtitle1">Server One responded to {serverOneUsage}% of requests </Typography>
+          <Typography variant="subtitle1">Server Two responded to {serverTwoUsage}% of requests </Typography>
+        </Grid>
         <Grid item xs={6} style={{textAlign: "center", padding: "1rem"}}>
           <Typography variant="h5">Sum Numbers</Typography>
+          <Typography variant="subtitle1">Delivered by server : {serverNameSum} </Typography>
           <TextField value={numOne} onChange={(e) => setNumOne(e.target.value)} type="number" label="First number" variant="outlined" />
           &nbsp;
           <TextField value={numTwo} onChange={(e) => setNumTwo(e.target.value)} type="number" label="Second number" variant="outlined" />
           <br /> <br />
           <Button variant="contained" onClick={sumNumbers}> Sum</Button>
           <Typography variant="subtitle2">Result: {result}</Typography>
-          <Typography variant="subtitle2">Delivered by server : {serverNameSum} </Typography>
         </Grid>
 
         <Grid item xs={6} style={{textAlign: "center"}}>
           <Typography variant="h5">Get Random Data</Typography>
           <Typography variant="subtitle1">Time elapsed: {elapsedTime} </Typography>
-          <Typography variant="subtitle1">Delivered by server: {serverNameData}</Typography>
+          <Typography variant="subtitle1"> { cacheHit ? "Cache hit!" : `Delivered by server: ${serverNameData}`}</Typography>
           <Button variant="contained" onClick={getData}> Get Data</Button>
           <Table>
             <TableHead>

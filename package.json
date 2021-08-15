@@ -12,6 +12,7 @@
     "http-proxy": "^1.18.1",
     "js-yaml": "^4.1.0",
     "node-cache": "^5.1.2",
+    "node-http-proxy-json": "^0.1.9",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3"
@@ -19,7 +20,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
