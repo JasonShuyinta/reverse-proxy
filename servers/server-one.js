@@ -11,17 +11,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-var PORT = 9092
-var ADDRESS = "127.0.0.1"
 var counter = 0;
 
 app.post("/sumNumbers", (req, res) => {
-  var numOne = parseInt(req.body.numOne);
-  var numTwo = parseInt(req.body.numTwo);
   counter++;
   return res.status(200).json({
-    result: numOne + numTwo,
-    serverName: `${req.hostname}:${PORT}`,
+    result: parseInt(req.body.numOne) + parseInt(req.body.numTwo),
+    serverName: req.headers.host,
     counter,
   });
 });
@@ -34,15 +30,11 @@ app.post("/getData", (req, res) => {
       counter++;
       return res.status(200).json({
         data: response.data,
-        serverName: `${req.hostname}:${PORT}`,
+        serverName: req.headers.host,
         counter,
       });
     })
     .catch((err) => console.log(err));
 });
 
-app.listen(PORT, ADDRESS, () =>
-  console.info(
-    `Server listening at ${ADDRESS}:${PORT}`
-  )
-);
+module.exports = app;

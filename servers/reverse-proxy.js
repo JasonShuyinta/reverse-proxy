@@ -1,10 +1,8 @@
-const http = require("http");
 const express = require("express");
 const httpProxy = require("http-proxy");
 const NodeCache = require("node-cache");
 const cors = require("cors");
 var modifyResponse = require('node-http-proxy-json');
-
 const fs = require("fs");
 const yaml = require("js-yaml");
 
@@ -12,22 +10,13 @@ var targets = [];
 var counter = 0;
 var serverOneUsageCounter = 0;
 var serverTwoUsageCounter = 0;
-
-
-function sum(a, b) {
-  return'http://127.0.0.1:9091'
-}
- 
-module.exports = sum;
-
+var chosenTarget = "";
 
 //This load balancer strategy chooses one of the servers randomly to serve the request
 function randomLoadBalancer() {
   var chosenTarget = targets[Math.floor(Math.random() * targets.length)];
   return chosenTarget;
 }
-
-//module.exports = randomLoadBalancer
 
 //The Round Robin strategy selectes sequentially the servers, so that each subsequent request is
 //served by the next server
@@ -53,7 +42,6 @@ const myCache = new NodeCache({ stdTTL: 5 });
 
 //The request passes through the proxy before being passed on to one of the servers
 proxy.on("proxyReq", function (proxyReq, req, res, options) {
-
   //If there is request made to the "/getData" endpoint the response is stored
   //in the cache. If a request is made to the same endpoint within 5 seconds from the
   //previous request, the response is taken from the cache instead of querying the server,
@@ -65,10 +53,11 @@ proxy.on("proxyReq", function (proxyReq, req, res, options) {
 
   if (req.body) {
     //In order for the request to pass through the proxy to the server, set the headers of the request
-    // so that it can read JSON data
+    // so that it can read JSON data and set the Host to the chosen server address
     let bodyData = JSON.stringify(req.body);
     proxyReq.setHeader("Content-Type", "application/json");
     proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+    proxyReq.setHeader("Host", chosenTarget)
     proxyReq.write(bodyData);
   }
 });
@@ -80,10 +69,8 @@ proxy.on("proxyRes", function (proxyRes, req, res) {
     var data = dataBuffer.toString("utf8");
 
     //Counters to keep track of the work load on each server
-    if (`http://${JSON.parse(data).serverName}` == targets[0])
-      serverOneUsageCounter = JSON.parse(data).counter; 
-    if (`http://${JSON.parse(data).serverName}` == targets[1])
-      serverTwoUsageCounter = JSON.parse(data).counter;
+    if(JSON.parse(data).serverName == targets[0]) serverOneUsageCounter = JSON.parse(data).counter
+    if(JSON.parse(data).serverName == targets[1]) serverTwoUsageCounter = JSON.parse(data).counter
 
     //If the request is made to "/getData", store the response in the cache
     if (proxyRes.client._httpMessage.path == "/getData")
@@ -130,24 +117,21 @@ proxyApp.get("/parseYaml", (req, res) => {
 //Based on the clients decision either select the load balancing strategy, 
 //or directly set the server to respond to the request
 proxyApp.use(function (req, res) {
-  var chosenStrategy = "";
+  
   switch (req.body.loadBalancer) {
     case "random":
-      chosenStrategy = randomLoadBalancer(); break;
+      chosenTarget = randomLoadBalancer(); break;
     case "roundrobin":
-      chosenStrategy = roundRobinBalancer(); break;
+      chosenTarget = roundRobinBalancer(); break;
     case "one":
-      chosenStrategy = targets[0]; break;
+      chosenTarget = targets[0]; break;
     case "two":
-      chosenStrategy = targets[1]; break;
+      chosenTarget = targets[1]; break;
   }
 
-  proxy.web(req, res, { target: chosenStrategy });
+  proxy.web(req, res, { target: chosenTarget });
 });
 
-const PORT = 8080;
-const ADDRESS = "127.0.0.1"
+//Export for testing purposes
+module.exports = { proxyApp, randomLoadBalancer, roundRobinBalancer };
 
-
-http.createServer(proxyApp)
-  .listen(PORT, ADDRESS, () => { console.log(`Proxy server listening at ${ADDRESS}:${PORT}`)});
