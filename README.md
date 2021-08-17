@@ -226,7 +226,9 @@ To test the software, 2 libraries were used: "jest" and "supertest". Tests were 
 and on the status codes and headers expected. There are tests for the reverse-proxy file, and the on the 2 servers.
 
 
+
 Useful links:
+
 Server Cache in Node Js – YouTube https://www.youtube.com/watch?v=ipIGWZwxC7w&t=499s
 
 http-proxy – Github Repository https://github.com/http-party/node-http-proxy#readme
@@ -242,5 +244,6 @@ Supertest - https://github.com/visionmedia/supertest#readme
 node-http-proxy-json - https://github.com/langjt/node-http-proxy-json#readme
 
 
+
 ## Author:
-## Jason Shuyinta
+### Jason Shuyinta
