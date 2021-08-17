@@ -17,6 +17,10 @@ In order to run the program:
 
 If the steps are done correctly, a web page should open at http://localhost:8080
 
+# Test
+To run the tests, open a new terminal and navigate to the reverse-proxy folder and run the following command:
+- npm test
+
 
 ## Documentation
 This example of a reverse proxy has been done using [NodeJs](https://nodejs.org/en/) and [ExpressJs](https://expressjs.com). 
@@ -38,7 +42,33 @@ Every request done by the client has to pass first through the proxy before reac
 many operations could be done, both to the requests and the responses. 
 For example: when the “sumNumbers” operation is called, the proxy verifies which load balancing strategy to use in order
 to choose which server will handle the request. Two strategies are implemented: Random and
-Round Robin. The first one just randomly picks one of the servers from the array and passes on the
+Round Robin. 
+
+```javascript
+//This load balancer strategy chooses one of the servers randomly to serve the request
+function randomLoadBalancer() {
+  var chosenTarget = targets[Math.floor(Math.random() * targets.length)];
+  return chosenTarget;
+}
+
+//The Round Robin strategy selectes sequentially the servers, so that each subsequent request is
+//served by the next server
+function roundRobinBalancer() {
+  //the while loop assures that the servers work equally, distributing the incoming requests
+  //to the server that has worked less. It is based on the idea of the Least Connection algorithm. 
+  while(Math.abs(serverOneUsageCounter - serverTwoUsageCounter) > 1) {
+    if(serverOneUsageCounter > serverTwoUsageCounter) chosenTarget = targets[1];
+    else chosenTarget = targets[0]
+    return chosenTarget;
+  }
+  var chosenTarget = targets[counter];
+  counter++;
+  if (counter === targets.length) counter = 0;
+  return chosenTarget;
+}
+```
+
+The first one just randomly picks one of the servers from the array and passes on the
 request, the latter picks sequentially a server from the array for subsequent requests that arrive to
 the proxy: in case on of the servers has served more requests than the other one, a while loop was implemented in order to keep track of
 each servers usage, in this way requests are forwarded to the server that has provided less responses. This was implemented in order to
