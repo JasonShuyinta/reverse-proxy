@@ -15,7 +15,7 @@ In order to run the program:
 - npm start
 
 
-If the steps are done correctly, a web page should open at http://localhost:8080
+If the steps are done correctly, a web page should open at http://localhost:3000
 
 # Test
 To run the tests, open a new terminal and navigate to the reverse-proxy folder and run the following command:
