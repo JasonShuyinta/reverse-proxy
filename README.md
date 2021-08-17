@@ -69,18 +69,18 @@ app.post("/getData", (req, res) => {
 ### Reverse Proxy
 After these two servers were done, I have implemented the reverse proxy. 
 Every request done by the client has to pass first through the proxy before reaching on the target servers. In this proxy
-many operations could be done, both to the requests and the responses. 
-For example: when the “sumNumbers” operation is called, the proxy verifies which load balancing strategy to use in order
-to choose which server will handle the request. Two strategies are implemented: Random and
+many operations could be done, both on the requests and the responses. 
+For example: when the “sumNumbers” request is called, the proxy verifies which load balancing strategy to use in order
+to choose which server will handle the operation. Two strategies are implemented: Random and
 Round Robin. 
 
 
 The first one just randomly picks one of the servers from the array and passes on the
 request, the latter picks sequentially a server from the array for subsequent requests that arrive to
-the proxy: in case on of the servers has served more requests than the other one, a while loop was implemented in order to keep track of
-each servers usage, in this way requests are forwarded to the server that has provided less responses. This was implemented in order to
-maintain a balance between the to servers so that they each respond to roughly 50% of the requests when the Round Robin is active.
-It resembles the mechanism of the Least Connection algorithm, where requests are passed to the server that has the leaset active connections.
+the proxy: in case one of the servers has served more requests than the other one, a while loop is implemented in order to keep track of
+each servers usage, in this way requests are forwarded to the server that has provided less responses. This was implemented to
+maintain a balance between the two servers so that they each respond to roughly 50% of the requests when the Round Robin is active.
+It resembles the mechanism of the Least Connection algorithm, where requests are passed to the server that has the least active connections.
 
 ```javascript
 //This load balancer strategy chooses one of the servers randomly to serve the request
@@ -144,8 +144,8 @@ also set with the chosen target given by the load balancing strategy.
   }
 ```
 
-The proxy even gets the responses from the server before passing it back to the client. This is done
-only for the “getData” operation, so that it can store the response in the cache. The cache remains
+The proxy even gets the responses from the server before passing it back to the client.
+In particular for the “getData” operation the proxy can store the response in the cache. The cache remains
 stored for only 5 seconds, so that if the same request is done within this timeframe, there is no
 need to query the server, it simply takes the stored response from the cache and returns it back to
 the client, saving bandwidth usage and reducing latency.
@@ -169,10 +169,10 @@ if (req.path == "/getData") {
 ```
 
 Before passing on the response to the client a simple operation is done to calculate the usage percentage of each server: on each
-API call a counter was incremented and returned in the response. In the proxy this counter is used to get the server usage out of all the calls made
-to each server. The total number of calls is mantained only in the proxy, so each server only knows its own usage, ignoring the usage of its peers.
+API call a counter was incremented and returned in the response. In the proxy this counter is used to get the server usage percentage out of all the calls made
+to every server. The total number of calls is mantained only in the proxy, so each server only knows its own usage, ignoring the usage of its peers.
 The usage property is then added to the response body through a library called "node-http-proxy-json". It is important to clarify that the library 
-only supports the gzip,deflate and uncompressed formats, and so assure that the servers use one of these compression formats. 
+at the moment only supports the gzip, deflate and uncompressed formats, and so assure that the servers use one of these compression formats. 
 
 ```javascript
 modifyResponse(res, proxyRes, function (body) {
@@ -208,7 +208,7 @@ proxyApp.get("/parseYaml", (req, res) => {
 });
 ```
 
-ReactJs was used for the frontend, just to simplify dynamic rendering, and Material-UI as the userinterface framework for quick-to-use table.
+ReactJs was used for the frontend, just to simplify dynamic rendering, and Material-UI as the UI framework for quick-to-use table.
 What follows is the list of the libraries that have been used for the assignment:
 
 - axios v.0.21.1
@@ -222,7 +222,7 @@ What follows is the list of the libraries that have been used for the assignment
 - node-http-proxy-json v.0.1.9
 
 ## Testing
-To test the software, 2 libraries were used: "jest" and "supertest". Tests were done on the return values the servers are supposed to return, 
+To test the software, 2 libraries were used: "jest" and "supertest". Tests were done on the return values the servers are supposed to give, 
 and on the status codes and headers expected. There are tests for the reverse-proxy file, and the on the 2 servers.
 
 
