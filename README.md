@@ -74,7 +74,7 @@ What follows is the list of the libraries that have been used for the assignment
 - cors v.2.8.5
 - express v.4.17.1
 - http-proxy v.1.18.1
-- js-yaml v.4.1.0",
+- js-yaml v.4.1.0
 - node-cache v.5.1.2
 - react v.17.0.2
 - nodemon v.2.0.12
@@ -82,8 +82,11 @@ What follows is the list of the libraries that have been used for the assignment
 
 Useful links:
 Server Cache in Node Js – YouTube https://www.youtube.com/watch?v=ipIGWZwxC7w&t=499s
+
 http-proxy – Github Repository https://github.com/http-party/node-http-proxy#readme
+
 Mock API - https://jsonplaceholder.typicode.com
+
 https://dzone.com/articles/properly-measuring-http-request-time-with-nodejs
 
 Author:
