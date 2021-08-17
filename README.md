@@ -1,5 +1,5 @@
-##reverse-proxy
-#Usage
+## reverse-proxy
+# Usage
 In order to run the program:
 1. Create a new folder and clone the repository using the following commands on a git shell:
 - git init
@@ -18,7 +18,7 @@ In order to run the program:
 If the steps are done correctly, a web page should open at http://localhost:8080
 
 
-##Documentation
+## Documentation
 This example of a reverse proxy has been done using [NodeJs](https://nodejs.org/en/) and [ExpressJs](https://expressjs.com). 
 The reason for using this framework is that it is simple to configure and it has a lot of documentation over the web with an active community.
 
@@ -26,10 +26,10 @@ First of all, the 2 servers were created: they are identical, running on differe
 are the same, but changing them will not affect the functionality of the program). There are just
 two simple operations done by the servers: “sumNumbers” and “getData”.
 
-- #/sumNumbers: it is a #POST operation, that takes as input two numbers and returns the
+- # /sumNumbers: it is a # POST operation, that takes as input two numbers and returns the
 sum of these values. Plus, it returns the server address that computed this calculation, in
 order for the client to check which server was involved.
-- #/getData: it is a #POST operation as well, and what it does is simply retrieve some random
+- # /getData: it is a # POST operation as well, and what it does is simply retrieve some random
 data taken from a mock [API](https://jsonplaceholder.typicode.com/). This operation was
 implemented to test the caching in the proxy.
 
