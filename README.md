@@ -1,4 +1,4 @@
-# reverse-proxy
+# Reverse Proxy
 ## Usage
 In order to run the program:
 1. Create a new folder and clone the repository using the following commands on a git shell:
