@@ -26,6 +26,7 @@ To run the tests, open a new terminal and navigate to the reverse-proxy folder a
 This example of a reverse proxy has been done using [NodeJs](https://nodejs.org/en/) and [ExpressJs](https://expressjs.com). 
 The reason for using this framework is that it is simple to configure and it has a lot of documentation over the web with an active community.
 
+### Servers 
 First of all, the 2 servers were created: they are identical, running on different ports (the addresses
 are the same, but changing them will not affect the functionality of the program). There are just
 two simple operations done by the servers: “sumNumbers” and “getData”.
@@ -65,6 +66,7 @@ app.post("/getData", (req, res) => {
 });
 ```
 
+### Reverse Proxy
 After these two servers were done, I have implemented the reverse proxy. 
 Every request done by the client has to pass first through the proxy before reaching on the target servers. In this proxy
 many operations could be done, both to the requests and the responses. 
