@@ -17,8 +17,21 @@ In order to run the program:
 
 If the steps are done correctly, a web page should open at http://localhost:3000
 
-# Test
-To run the tests, open a new terminal and navigate to the reverse-proxy folder and run the following command:
+### Demo
+In the web page you will see some radio buttons. Choose a load balancing strategy or directly a server. After you made your choice
+insert some numbers in the fields and hit the "SUM" button. You will see the result and which server made the calculation, plus 
+you will be able to see the usage percentage of each server. 
+If for example you choose "Server One" and hit the SUM button multiple times, you will see the usage percentage of that server increase, and 
+the other one decrease. 
+Now choose the "Round Robin" strategy and hit the SUM button again multiple times: you will see the usage percentages convey towards 50%.
+
+To demo the cache mechanism, choose any radio button. Hit the "GET DATA" button: a table will appear with some random data. It will be possible 
+to see the time elapsed to obtain the response (usually > 150 milliseconds) and the server that was called. If you hit the button again within 5 seconds
+from the previous click you will see  that the time elapsed will be much lower (usually < 70 milliseconds) and no more the server name but the "Cache hit!" expression.
+Waiting 5 seconds will cancel the cache and one of the servers will be called again.
+
+### Test
+To run the tests open a new terminal, navigate to the reverse-proxy folder and run the following command:
 - npm test
 
 
